@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DocTR OCR</title>
+    <title>Neural Vision OCR</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -304,6 +304,189 @@
             overflow: hidden;
             animation: slideInUp 0.6s ease-out;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .result-card {
+                grid-template-columns: 300px 1fr;
+            }
+        }
+
+        .image-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(0, 245, 255, 0.3);
+        }
+
+        .result-image {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .zoom-icon {
+            font-size: 2rem;
+            color: #00f5ff;
+            text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+        }
+
+        .text-results {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .extracted-text-header {
+            color: #00f5ff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(0, 245, 255, 0.3);
+        }
+
+        /* Image Modal Styles */
+        .image-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1000;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+            background: rgba(0, 245, 255, 0.05);
+        }
+
+        .modal-header h3 {
+            color: #00f5ff;
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #e4e4e7;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
         }
 
         @keyframes slideInUp {
@@ -543,28 +726,97 @@
                     
                     let content = `<h3>${result.filename}</h3>`;
                     
-                    if (result.error) {
-                        content += `<div class="error"><strong>Processing Error:</strong> ${result.error}</div>`;
-                    } else if (result.lines && result.lines.length > 0) {
-                        result.lines.forEach(line => {
-                            const confidencePercent = Math.round(line.confidence * 100);
-                            content += `
-                                <div class="result-line">
-                                    <div class="result-text">${line.text}</div>
-                                    <div class="confidence">
-                                        🎯 ${confidencePercent}%
+                    // Add image display section
+                    if (result.image_data_url) {
+                        content += `
+                            <div class="image-section">
+                                <div class="image-container">
+                                    <img src="${result.image_data_url}" alt="${result.filename}" class="result-image">
+                                    <div class="image-overlay">
+                                        <div class="zoom-icon">🔍</div>
                                     </div>
                                 </div>
-                            `;
+                            </div>
+                        `;
+                    }
+                    
+                    // Add results section
+                    content += `<div class="text-results">`;
+                    
+                    if (result.error) {
+                        content += `<div class="error"><strong>Processing Error:</strong> ${result.error}</div>`;
+                    } else if (result.text && result.text.trim() && result.text !== "No text could be detected in this image.") {
+                        const textLines = result.text.split('\n').filter(line => line.trim());
+                        content += `<div class="extracted-text-header">📝 Extracted Text:</div>`;
+                        textLines.forEach(line => {
+                            if (line.trim()) {
+                                content += `
+                                    <div class="result-line">
+                                        <div class="result-text">${line.trim()}</div>
+                                        <div class="confidence">
+                                            ✨ AI Detected
+                                        </div>
+                                    </div>
+                                `;
+                            }
                         });
                     } else {
                         content += '<div class="no-text">🔍 No text detected in this image</div>';
                     }
                     
+                    content += `</div>`; // Close text-results
+                    
                     card.innerHTML = content;
                     resultsContainer.appendChild(card);
+
+                    // Add click handler for image zoom
+                    const img = card.querySelector('.result-image');
+                    if (img) {
+                        img.addEventListener('click', () => openImageModal(result.image_data_url, result.filename));
+                    }
                 }, index * 200); // Stagger the animations
             });
+        }
+
+        // Image modal functionality
+        function openImageModal(imageSrc, filename) {
+            const modal = document.createElement('div');
+            modal.className = 'image-modal';
+            modal.innerHTML = `
+                <div class="modal-backdrop">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>${filename}</h3>
+                            <button class="modal-close">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <img src="${imageSrc}" alt="${filename}" class="modal-image">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close modal handlers
+            const closeBtn = modal.querySelector('.modal-close');
+            const backdrop = modal.querySelector('.modal-backdrop');
+            
+            closeBtn.addEventListener('click', () => document.body.removeChild(modal));
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            // ESC key handler
+            const escHandler = (e) => {
+                if (e.key === 'Escape') {
+                    document.body.removeChild(modal);
+                    document.removeEventListener('keydown', escHandler);
+                }
+            };
+            document.addEventListener('keydown', escHandler);
         }
     </script>
 </body>
