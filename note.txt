@@ -1,13 +1,13 @@
-pip uninstall tensorflow python-doctr
-```*(You can run this command multiple times if it says the package is not found, just to be sure).*
+pip uninstall python-doctr tensorflow tensorflow-cpu tensorflow-io-gcs-filesystem keras -y
 
-#### Step 2: Install Compatible Versions
+pip install tensorflow==2.15.0
+pip install python-doctr[tf]
 
-Now, install a version of TensorFlow that is less than 2.16. Then, reinstall `python-doctr` which will use the version of TensorFlow you just installed.
 
-```bash
-# Install a specific, compatible version of TensorFlow
-pip install "tensorflow<2.16"
 
-# Now, install doctr with the TensorFlow backend dependencies
-pip install "python-doctr[tf]"
+Flask
+Flask-Cors
+tensorflow==2.15.0
+python-doctr[tf]
+
+
