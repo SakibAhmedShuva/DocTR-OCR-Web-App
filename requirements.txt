@@ -1,0 +1,6 @@
+doctr==1.9.0
+Flask==3.1.1
+flask_cors==5.0.1
+numpy==2.3.0
+Pillow==11.2.1
+python_doctr==0.11.0
