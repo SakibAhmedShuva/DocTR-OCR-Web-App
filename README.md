@@ -2,7 +2,7 @@
 
 A robust and user-friendly web application for performing Optical Character Recognition (OCR) on multiple images simultaneously. Built with the powerful DocTR library and TensorFlow backend, served through a lightweight Flask web server.
 
-![DocTR OCR Web Application](https://user-images.githubusercontent.com/26252358/228062958-323ffbf9-f597-4148-842e-131b79f228b7.png)
+![image](https://github.com/user-attachments/assets/6c5c54b3-1530-42b7-8584-094503570c0d)
 
 ## ✨ Features
 
